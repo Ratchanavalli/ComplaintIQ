@@ -1,0 +1,11 @@
+flask==3.1.0
+flask-cors==5.0.0
+sqlalchemy==2.0.36
+alembic==1.14.0
+numpy==2.5.4
+scikit-learn==1.6.1
+nltk==3.9.1
+textblob==0.18.0
+python-dotenv==1.0.1
+pytest==8.3.3
+pydantic==2.10.3

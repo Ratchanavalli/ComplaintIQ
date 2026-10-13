@@ -1,0 +1,26 @@
+{
+  "project_type": "Flask/SQLAlchemy/SQLite REST API + vanilla HTML/CSS/JS frontend, single-file static pages, no frontend build step",
+  "language": "Python 3.15 (backend), vanilla JS ES2020 (frontend)",
+  "build_system": "No build step. Backend: Python venv at complaint-intelligence/venv. Run with: python main.py from the complaint-intelligence directory. Static HTML served directly by Flask's send_from_directory.",
+  "test_framework": "pytest (pytest==8.3.3, conftest.py at root). Run: pytest from complaint-intelligence directory. No tests exist yet for new auth/routes code.",
+  "build_command": "cd complaint-intelligence && python main.py (starts server; use Ctrl+C to stop). To check syntax only: python -c \"from src.api import create_app; print('OK')\"",
+  "test_command": "cd complaint-intelligence && pytest --tb=short -q",
+  "verification_instructions": "1. Activate venv: venv\\Scripts\\activate. 2. Run: python main.py. 3. Open http://127.0.0.1:5000 (existing dashboard), /customer (customer portal), /management (management portal). 4. Syntax-check new modules: python -c \"from src.api.auth import login_required; print('auth OK')\". 5. pytest for unit tests.",
+  "snapshot_or_generated_files": "data/complaints.db is a SQLite file auto-created by init_db(). It persists across runs. If schema changes cause errors, delete data/complaints.db and restart.",
+  "environment_constraints": "Windows PowerShell, Python 3.15, venv at complaint-intelligence/venv. werkzeug is already installed as a Flask dependency (not listed separately in requirements.txt but available). flask-session NOT installed; use Flask's built-in session (signed cookie, requires SECRET_KEY). All paths must be absolute or relative to complaint-intelligence/ working directory. Do NOT use pandas — all trend queries must use pure SQLAlchemy.",
+  "contribution_requirements": "Preserve all existing tables (complaints, clusters, processing_logs) and all existing routes. Do not remove or rename existing columns. SQLite additive migration: Base.metadata.create_all() adds new tables/columns safely on restart. Keep init_db() as the migration mechanism.",
+  "key_patterns": "Routes use _db() helper that calls next(get_db()). Blueprints registered in src/api/__init__.py create_app(). Static files served from static/ folder via Flask's static_folder. All HTML pages are self-contained single files with inline CSS and JS. No templating engine — pure static files. Priority breakdown available from src/priority/scorer.calculate_priority() which returns a 'breakdown' dict with sentiment_pts, category_pts, urgency_pts, cluster_pts. Seed pattern: check count first, skip if > 0.",
+  "relevant_files": [
+    "src/db/models.py",
+    "src/db/seed.py",
+    "src/api/__init__.py",
+    "src/api/routes.py",
+    "src/priority/scorer.py",
+    "src/utils/pipeline.py",
+    "static/index.html",
+    "main.py",
+    "requirements.txt",
+    ".env"
+  ],
+  "directory_structure": "complaint-intelligence/ — project root. src/api/ — Flask blueprints and app factory. src/db/ — SQLAlchemy models + seed. src/categorization/, src/sentiment/, src/priority/, src/grouping/ — AI pipeline modules. src/utils/pipeline.py — orchestrates analysis. static/ — all HTML served to browser. data/ — SQLite DB file. venv/ — Python virtual environment."
+}

@@ -1,0 +1,7 @@
+{
+  "task_id": "task-complaint-intelligence-enhance",
+  "task_description": "Enhance the existing working Flask/SQLite Customer Complaint Intelligence system with: (1) user auth (session cookie, manager + customer roles), (2) new DB tables (users, complaint_responses, internal_notes) + new columns on complaints, (3) new API routes for responses/notes/alerts/trends/similar, (4) customer portal HTML (static/customer.html) with login/submit/track, (5) management portal HTML (static/management.html) with full dashboard/complaints/analytics/alerts, (6) seeded demo users, (7) updated main.py startup output.",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}

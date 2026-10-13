@@ -1,0 +1,95 @@
+=======================================================
+  Customer Complaint Intelligence System
+=======================================================
+
+[1/4] Initialising database...
+Database initialised.
+[2/4] Seeding sample complaints...
+Database initialised.
+Inserted 20 sample complaints.
+Seeded 6 demo users.
+Linked complaints to demo user IDs.
+[3/4] Running analysis pipeline...
+      ✓ Processed 20 complaint(s) into 8 cluster(s).
+[4/4] Starting Flask API...
+
+  API running at:  http://127.0.0.1:5000
+  Dashboard:       GET  /
+  Customer portal: GET  /customer
+  Mgmt portal:     GET  /management
+  List complaints: GET  /api/complaints
+  Priority view:   GET  /api/complaints/priority
+  Clusters:        GET  /api/complaints/clusters
+  Summary stats:   GET  /api/complaints/summary
+  Submit new:      POST /api/complaints
+
+  ── Demo Credentials ─────────────────────────────────
+
+  CUSTOMER PORTAL  →  http://127.0.0.1:5000/customer
+  ┌─────────────┬──────────────┬─────────────────────┐
+  │ Username    │ Password     │ Name                │
+  ├─────────────┼──────────────┼─────────────────────┤
+  │ alice       │ alice123     │ Alice Johnson       │
+  │ bob         │ bob123       │ Bob Smith           │
+  │ carol       │ carol123     │ Carol White         │
+  │ demo        │ demo123      │ Demo Customer       │
+  └─────────────┴──────────────┴─────────────────────┘
+
+  MANAGEMENT PORTAL  →  http://127.0.0.1:5000/management
+  ┌─────────────┬──────────────┬─────────────────────┐
+  │ Username    │ Password     │ Name                │
+  ├─────────────┼──────────────┼─────────────────────┤
+  │ admin       │ admin123     │ Admin User          │
+  │ manager1    │ manager123   │ Sarah Manager       │
+  └─────────────┴──────────────┴─────────────────────┘
+
+  Press Ctrl+C to stop.
+
+ * Serving Flask app 'src.api'
+ * Debug mode: on
+=======================================================
+  Customer Complaint Intelligence System
+=======================================================
+
+[1/4] Initialising database...
+Database initialised.
+[2/4] Seeding sample complaints...
+Database initialised.
+Database already has 20 complaints. Skipping seed.
+Users already seeded. Skipping.
+[3/4] Running analysis pipeline...
+      ✓ Nothing to process.
+[4/4] Starting Flask API...
+
+  API running at:  http://127.0.0.1:5000
+  Dashboard:       GET  /
+  Customer portal: GET  /customer
+  Mgmt portal:     GET  /management
+  List complaints: GET  /api/complaints
+  Priority view:   GET  /api/complaints/priority
+  Clusters:        GET  /api/complaints/clusters
+  Summary stats:   GET  /api/complaints/summary
+  Submit new:      POST /api/complaints
+
+  ── Demo Credentials ─────────────────────────────────
+
+  CUSTOMER PORTAL  →  http://127.0.0.1:5000/customer
+  ┌─────────────┬──────────────┬─────────────────────┐
+  │ Username    │ Password     │ Name                │
+  ├─────────────┼──────────────┼─────────────────────┤
+  │ alice       │ alice123     │ Alice Johnson       │
+  │ bob         │ bob123       │ Bob Smith           │
+  │ carol       │ carol123     │ Carol White         │
+  │ demo        │ demo123      │ Demo Customer       │
+  └─────────────┴──────────────┴─────────────────────┘
+
+  MANAGEMENT PORTAL  →  http://127.0.0.1:5000/management
+  ┌─────────────┬──────────────┬─────────────────────┐
+  │ Username    │ Password     │ Name                │
+  ├─────────────┼──────────────┼─────────────────────┤
+  │ admin       │ admin123     │ Admin User          │
+  │ manager1    │ manager123   │ Sarah Manager       │
+  └─────────────┴──────────────┴─────────────────────┘
+
+  Press Ctrl+C to stop.
+
