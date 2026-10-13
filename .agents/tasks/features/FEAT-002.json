@@ -1,0 +1,39 @@
+{
+  "id": "FEAT-002",
+  "type": "feat",
+  "description": "Customer portal: create static/customer.html — a self-contained ShopIQ-branded single-page app with dark blue/teal theme. Depends on FEAT-001 (auth routes and complaint ownership enforcement must be in place). Independent of FEAT-003 (management portal).",
+  "status": "completed",
+  "steps": [
+    "Step 1 — Create static/customer.html as a single self-contained HTML file. Theme: dark blue/teal (CSS variables: --bg:#060d14, --surface:#0a1628, --accent:#0ea5e9, --accent2:#06b6d4, --text:#e2e8f0, --muted:#64748b — visually distinct from the purple/indigo management theme). No external dependencies except Google Fonts Inter and an inline SVG for charts.",
+
+    "Step 2 — Login screen (shown when not authenticated). ShopIQ branding: logo + 'ShopIQ Customer Portal'. Username/password form. Demo account hint box showing: alice/alice123, bob/bob123, carol/carol123, demo/demo123 (styled as a help card, not form pre-fill). On submit: POST /auth/login; on success store role/username in JS variables; if role != 'customer' show error 'This portal is for customers only'; if success hide login and show main app. On page load call GET /auth/me to check existing session — if already logged in go straight to main app.",
+
+    "Step 3 — Main app layout: top navbar with ShopIQ logo, welcome message (Hello, {full_name}), and Logout button (POST /auth/logout then reload). Three tabs: 'My Complaints', 'Submit Complaint', 'Track Complaint'. Tab switching via JS classList toggle.",
+
+    "Step 4 — 'My Complaints' tab. On tab open call GET /api/complaints with a filter param customer_mode=true — the backend will return only this customer's complaints (enforced server-side by login_required + customer_id filter). Actually: since the backend list_complaints enforces nothing per-customer yet, the implementation should call GET /api/complaints and the backend route (updated in FEAT-001 routes.py) already filters by customer_id when role==customer. Display results in a table: ID, Category badge, Sentiment badge, Priority badge, Status badge, Date, View button. Status badges: open=grey, in_progress=blue, resolved=green, closed=slate. Filter dropdown by status above the table. Empty-state message if no complaints.",
+
+    "Step 5 — 'Submit Complaint' tab. Form fields: Order ID (text), Product ID (text), Channel (select: web/email/chat/phone), Complaint Text (textarea, required, min 20 chars). customer_id is taken from the session (set by backend) — do NOT show it in the form. On submit: POST /api/complaints with {complaint_text, channel, order_id, product_id} — customer_id is set by backend from session. On success: show AI analysis result card below the form with: Category badge, Sentiment badge, Priority level + score bar, Complaint ID. Card styled with teal/blue gradient. Show success toast. Keep form visible so user can submit again.",
+
+    "Step 6 — 'Track Complaint' tab. Initially shows a search input (complaint ID or pick from 'My Complaints' list). When a complaint is selected or ID entered: call GET /api/complaints/<id>/detail. Show full detail panel: complaint text block, submitted date, order/product info, AI analysis card (category, sentiment, priority score bar + explanation from GET /api/complaints/<id>/priority-explanation), status timeline (visual step progress: Open → In Progress → Resolved → Closed, highlight current step), management responses section (list of visible responses with date, labelled 'Response from ShopIQ Support'). DO NOT show internal notes. Security note at bottom: italic grey text 'This is a simulated customer portal for demonstration. In a real deployment this would be embedded in the ShopIQ shopping app with single sign-on.'",
+
+    "Step 7 — Modify GET /api/complaints in routes.py (already updated in FEAT-001 Step 4) to filter by customer_id when role==customer. Specifically: after applying existing filters, add: if current_role() == 'customer': q = q.filter(Complaint.customer_id == str(current_user_id())). This ensures the My Complaints tab only sees the logged-in customer's data. This is a backend change but it belongs here because it's the contract the customer portal depends on — add it to routes.py in this FEAT if FEAT-001 did not include it.",
+
+    "Step 8 — Add status field to _complaint_dict() serializer in routes.py (if not already added in FEAT-001): include 'status': c.status or 'open' in the returned dict. Also include 'responses' key in the detail endpoint returning list of {id, response_text, created_at, manager_id} for visible responses."
+  ],
+  "acceptance_criteria": [
+    "GET http://127.0.0.1:5000/customer returns 200 with HTML content",
+    "Logging in as alice/alice123 shows Alice's complaints only (not other customers' complaints)",
+    "Submitting a complaint as alice creates a new complaint in the DB with customer_id matching alice's user.id",
+    "Track Complaint shows the AI analysis and priority explanation for Alice's complaint",
+    "Logging in as admin/admin123 on /customer shows 'This portal is for customers only' error",
+    "Logging out clears the session and returns to login screen"
+  ],
+  "verification": [
+    "cd complaint-intelligence && python main.py — server starts; open http://127.0.0.1:5000/customer in browser",
+    "Login as alice/alice123 — should see My Complaints tab with Alice's complaints",
+    "Submit a new complaint — should appear in My Complaints and show AI analysis card",
+    "Try login as admin/admin123 — should be rejected with 'customers only' message"
+  ],
+  "blocked_reason": null,
+  "findings": "1. GET /auth/me did not return full_name — fixed auth_routes.py to store full_name in session and return it from /me. 2. Theme uses CSS vars --bg:#060d14, --surface:#0a1628, --accent:#0ea5e9, --accent2:#06b6d4 (dark blue/teal, visually distinct from management purple/indigo). 3. Status badge class for 'in_progress' uses 'badge-in_progress' — CSS rule matches exactly. 4. Detail endpoint returns responses array; customer sees only is_visible_to_customer=true items (enforced server-side). 5. Priority explanation endpoint returns full explanation string used directly in the UI."
+}
