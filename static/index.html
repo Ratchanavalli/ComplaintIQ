@@ -1,990 +1,957 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ComplaintIQ — Intelligence Dashboard</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Complaint Intelligence — ComplaintIQ</title>
+  <meta name="description" content="AI-powered complaint analysis, smart prioritization, and end-to-end resolution tracking." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
 /* ══════════════════════════════════════════════════════
-   RESET & TOKENS
+   RESET & DESIGN TOKENS
 ══════════════════════════════════════════════════════ */
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:          #07090f;
-  --bg2:         #0d1017;
-  --surface:     #111521;
-  --surface2:    #161b2c;
-  --border:      rgba(255,255,255,.07);
-  --border2:     rgba(255,255,255,.12);
-  --text:        #e8eaf0;
-  --muted:       #6b7280;
-  --muted2:      #9ca3af;
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  --indigo:      #6366f1;
-  --indigo-glow: rgba(99,102,241,.35);
-  --violet:      #8b5cf6;
-  --pink:        #ec4899;
-  --sky:         #38bdf8;
+:root {
+  --bg:           #07090f;
+  --bg2:          #0d1017;
+  --surface:      #111521;
+  --surface2:     #161b2c;
+  --border:       rgba(255, 255, 255, .07);
+  --border2:      rgba(255, 255, 255, .12);
+  --text:         #e8eaf0;
+  --muted:        #6b7280;
+  --muted2:       #9ca3af;
 
-  --critical:    #f43f5e;
-  --high:        #fb923c;
-  --medium:      #facc15;
-  --low:         #4ade80;
+  --indigo:       #6366f1;
+  --indigo-dark:  #4f46e5;
+  --indigo-glow:  rgba(99, 102, 241, .35);
+  --violet:       #8b5cf6;
+  --violet-glow:  rgba(139, 92, 246, .25);
 
-  --positive:    #4ade80;
-  --neutral:     #94a3b8;
-  --negative:    #f43f5e;
-
-  --delivery:    #38bdf8;
-  --refund:      #a78bfa;
-  --quality:     #f43f5e;
-  --service:     #fb923c;
-  --other:       #64748b;
-
-  --sidebar-w:   240px;
-  --radius:      14px;
-  --radius-sm:   8px;
+  --radius:       14px;
+  --radius-sm:    8px;
+  --radius-xs:    6px;
 }
-html{font-size:14px;scroll-behavior:smooth}
-body{
-  background:var(--bg);
-  color:var(--text);
-  font-family:'Inter',system-ui,sans-serif;
-  min-height:100vh;
-  display:flex;
-  overflow-x:hidden;
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
 }
-/* Animated background */
-body::before{
-  content:'';
-  position:fixed;inset:0;
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ambient background glow */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 20% 20%, rgba(99,102,241,.06) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 80% 80%, rgba(139,92,246,.05) 0%, transparent 60%);
-  pointer-events:none;z-index:0;
+    radial-gradient(ellipse 70% 50% at 15% 10%,  rgba(99, 102, 241, .07) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 85% 80%,  rgba(139, 92, 246, .06) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 35% at 50% 50%,  rgba(99, 102, 241, .03) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 /* ══════════════════════════════════════════════════════
-   SIDEBAR
+   TOP NAV
 ══════════════════════════════════════════════════════ */
-.sidebar{
-  width:var(--sidebar-w);min-height:100vh;
-  background:var(--surface);
-  border-right:1px solid var(--border);
-  display:flex;flex-direction:column;
-  padding:0 0 24px;
-  position:fixed;top:0;left:0;bottom:0;
-  z-index:200;
-  backdrop-filter:blur(20px);
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  height: 68px;
+  background: rgba(7, 9, 15, .80);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
 }
-.sidebar-logo{
-  padding:28px 24px 24px;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:12px;
-}
-.logo-icon{
-  width:38px;height:38px;border-radius:10px;
-  background:linear-gradient(135deg,var(--indigo),var(--violet));
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;flex-shrink:0;
-  box-shadow:0 0 20px var(--indigo-glow);
-}
-.logo-text h1{font-size:.95rem;font-weight:700;color:#fff;letter-spacing:-.01em}
-.logo-text p{font-size:.7rem;color:var(--muted);margin-top:1px}
 
-.nav{margin-top:12px;padding:0 12px;flex:1}
-.nav-section{
-  font-size:.65rem;font-weight:600;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.1em;
-  padding:16px 12px 6px;
+.nav-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
 }
-.nav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:9px 12px;border-radius:var(--radius-sm);
-  cursor:pointer;color:var(--muted2);font-size:.825rem;font-weight:500;
-  transition:all .2s;position:relative;margin-bottom:2px;
-}
-.nav-item:hover{color:var(--text);background:rgba(255,255,255,.05)}
-.nav-item.active{
-  color:#fff;background:linear-gradient(135deg,rgba(99,102,241,.25),rgba(139,92,246,.15));
-  border:1px solid rgba(99,102,241,.3);
-}
-.nav-item.active::before{
-  content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);
-  width:3px;height:60%;background:var(--indigo);border-radius:0 2px 2px 0;
-}
-.nav-icon{width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:.95rem}
 
-.sidebar-footer{
-  margin:0 12px;padding:14px;
-  background:linear-gradient(135deg,rgba(99,102,241,.1),rgba(139,92,246,.08));
-  border:1px solid rgba(99,102,241,.2);border-radius:var(--radius-sm);
-  font-size:.72rem;color:var(--muted2);line-height:1.5;
+.nav-logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  box-shadow: 0 0 24px var(--indigo-glow);
 }
-.sidebar-footer strong{color:var(--text);display:block;margin-bottom:2px}
+
+.nav-logo-text {
+  font-size: 1.125rem;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  color: #fff;
+  white-space: nowrap;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Hamburger — hidden on desktop */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 6px;
+  background: none;
+  border: none;
+  color: var(--text);
+}
+.nav-hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transition: transform .25s, opacity .25s;
+}
+
+/* Mobile nav drawer */
+.nav-mobile {
+  display: none;
+  position: fixed;
+  top: 68px; left: 0; right: 0;
+  background: rgba(11, 13, 22, .97);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border2);
+  padding: 16px 24px 24px;
+  z-index: 999;
+  flex-direction: column;
+  gap: 12px;
+}
+.nav-mobile.open { display: flex; }
 
 /* ══════════════════════════════════════════════════════
-   MAIN LAYOUT
+   BUTTONS
 ══════════════════════════════════════════════════════ */
-.main{margin-left:var(--sidebar-w);flex:1;padding:32px 36px;position:relative;z-index:1;min-width:0}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: var(--radius-sm);
+  border: none;
+  cursor: pointer;
+  font-size: .875rem;
+  font-weight: 600;
+  font-family: 'Inter', system-ui, sans-serif;
+  text-decoration: none;
+  transition: all .2s ease;
+  white-space: nowrap;
+  line-height: 1;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  color: #fff;
+  box-shadow: 0 4px 16px var(--indigo-glow);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px var(--indigo-glow);
+  filter: brightness(1.08);
+}
+.btn-primary:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 3px;
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--muted2);
+  border: 1px solid var(--border2);
+}
+.btn-outline:hover {
+  background: rgba(255, 255, 255, .06);
+  color: var(--text);
+  border-color: rgba(255, 255, 255, .2);
+}
+.btn-outline:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 3px;
+}
+
+.btn-lg {
+  padding: 14px 32px;
+  font-size: 1rem;
+  border-radius: var(--radius-sm);
+}
 
 /* ══════════════════════════════════════════════════════
-   PAGE HEADER
+   MAIN WRAPPER
 ══════════════════════════════════════════════════════ */
-.page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px}
-.page-header-left h2{
-  font-size:1.6rem;font-weight:800;letter-spacing:-.03em;
-  background:linear-gradient(135deg,#fff 0%,#a5b4fc 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+main {
+  position: relative;
+  z-index: 1;
+  padding-top: 68px; /* nav height */
 }
-.page-header-left p{color:var(--muted);font-size:.8rem;margin-top:4px}
-.btn{
-  padding:9px 18px;border-radius:var(--radius-sm);border:none;
-  cursor:pointer;font-size:.8rem;font-weight:600;
-  font-family:'Inter',sans-serif;transition:all .2s;
-}
-.btn-primary{
-  background:linear-gradient(135deg,var(--indigo),var(--violet));
-  color:#fff;box-shadow:0 4px 15px var(--indigo-glow);
-}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px var(--indigo-glow)}
-.btn-ghost{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--border2)}
-.btn-ghost:hover{background:rgba(255,255,255,.1)}
 
 /* ══════════════════════════════════════════════════════
-   STAT CARDS
+   HERO SECTION
 ══════════════════════════════════════════════════════ */
-.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
-.stat-card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:20px 22px;
-  position:relative;overflow:hidden;
-  transition:transform .2s,box-shadow .2s;
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 96px 24px 80px;
+  position: relative;
+  overflow: hidden;
 }
-.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.3)}
-.stat-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  border-radius:var(--radius) var(--radius) 0 0;
+
+/* Animated hero glow */
+.hero::before {
+  content: '';
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 300px;
+  background: radial-gradient(ellipse, rgba(99, 102, 241, .18) 0%, transparent 70%);
+  pointer-events: none;
+  animation: heroGlow 6s ease-in-out infinite alternate;
+  border-radius: 50%;
+  filter: blur(40px);
 }
-.stat-card.c-total::before {background:linear-gradient(90deg,var(--indigo),var(--violet))}
-.stat-card.c-critical::before{background:linear-gradient(90deg,var(--critical),#ff6b8a)}
-.stat-card.c-negative::before{background:linear-gradient(90deg,#f43f5e,var(--high))}
-.stat-card.c-score::before  {background:linear-gradient(90deg,var(--sky),var(--indigo))}
-.stat-glow{
-  position:absolute;top:-20px;right:-20px;
-  width:80px;height:80px;border-radius:50%;
-  opacity:.08;filter:blur(20px);
+
+@keyframes heroGlow {
+  0%   { opacity: .6; transform: translateX(-50%) scale(1); }
+  100% { opacity: 1;  transform: translateX(-50%) scale(1.15); }
 }
-.stat-label{font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
-.stat-value{font-size:2.2rem;font-weight:800;letter-spacing:-.04em;line-height:1}
-.stat-sub{font-size:.72rem;color:var(--muted);margin-top:6px}
-.stat-icon{position:absolute;bottom:16px;right:16px;font-size:1.6rem;opacity:.15}
+
+.hero-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: rgba(99, 102, 241, .12);
+  border: 1px solid rgba(99, 102, 241, .25);
+  font-size: .75rem;
+  font-weight: 600;
+  color: #a5b4fc;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.hero-heading {
+  font-size: clamp(2.25rem, 6vw, 3.75rem);
+  font-weight: 900;
+  letter-spacing: -.04em;
+  line-height: 1.1;
+  max-width: 820px;
+  background: linear-gradient(135deg, #ffffff 0%, #c4b5fd 50%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 24px;
+}
+
+.hero-subtitle {
+  font-size: clamp(1rem, 2.5vw, 1.2rem);
+  color: var(--muted2);
+  max-width: 600px;
+  line-height: 1.65;
+  margin-bottom: 44px;
+  font-weight: 400;
+}
+
+.hero-ctas {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.hero-disclaimer {
+  font-size: .78rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(250, 204, 21, .07);
+  border: 1px solid rgba(250, 204, 21, .15);
+  padding: 7px 16px;
+  border-radius: 20px;
+}
 
 /* ══════════════════════════════════════════════════════
-   CARDS (generic)
+   FEATURES SECTION
 ══════════════════════════════════════════════════════ */
-.card{
-  background:var(--surface);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:22px;
+.features {
+  padding: 80px 24px;
+  max-width: 1120px;
+  margin: 0 auto;
 }
-.card-title{
-  font-size:.7rem;font-weight:700;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.08em;margin-bottom:18px;
-  display:flex;align-items:center;gap:8px;
+
+.section-label {
+  font-size: .7rem;
+  font-weight: 700;
+  color: var(--indigo);
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  margin-bottom: 12px;
+  text-align: center;
 }
-.card-title .dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+.section-title {
+  font-size: clamp(1.75rem, 4vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -.03em;
+  color: #fff;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.section-subtitle {
+  font-size: 1rem;
+  color: var(--muted2);
+  text-align: center;
+  max-width: 560px;
+  margin: 0 auto 56px;
+  line-height: 1.65;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, .4), transparent);
+  opacity: 0;
+  transition: opacity .25s;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, .3);
+  box-shadow: 0 12px 40px rgba(99, 102, 241, .12);
+}
+
+.feature-card:hover::after { opacity: 1; }
+
+.feature-icon {
+  font-size: 2rem;
+  margin-bottom: 16px;
+  display: block;
+  line-height: 1;
+}
+
+.feature-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  letter-spacing: -.02em;
+}
+
+.feature-desc {
+  font-size: .875rem;
+  color: var(--muted2);
+  line-height: 1.65;
+}
 
 /* ══════════════════════════════════════════════════════
-   CHARTS ROW
+   HOW IT WORKS SECTION
 ══════════════════════════════════════════════════════ */
-.charts-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
-
-/* Bar chart */
-.bar-chart{display:flex;flex-direction:column;gap:12px}
-.bar-row{display:flex;align-items:center;gap:10px}
-.bar-label{width:100px;font-size:.76rem;color:var(--text);flex-shrink:0;font-weight:500}
-.bar-track{
-  flex:1;background:rgba(255,255,255,.05);
-  border-radius:6px;height:8px;overflow:hidden;
+.how-it-works {
+  padding: 80px 24px;
+  background: var(--bg2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
 }
-.bar-fill{height:100%;border-radius:6px;transition:width .8s cubic-bezier(.4,0,.2,1)}
-.bar-count{width:24px;text-align:right;font-size:.72rem;color:var(--muted);font-weight:600}
 
-/* Donut */
-.donut-wrap{display:flex;align-items:center;gap:20px}
-.donut-legend{display:flex;flex-direction:column;gap:10px}
-.legend-item{display:flex;align-items:center;gap:8px;font-size:.78rem}
-.legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-.legend-label{color:var(--muted2)}
-.legend-val{margin-left:auto;font-weight:600;color:var(--text)}
+.how-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.steps-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  position: relative;
+}
+
+/* Connecting line between steps */
+.steps-row::before {
+  content: '';
+  position: absolute;
+  top: 36px;
+  left: calc(100% / 6);
+  right: calc(100% / 6);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, .5), var(--indigo), rgba(99, 102, 241, .5), transparent);
+  z-index: 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+.step-number {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(99, 102, 241, .2), rgba(139, 92, 246, .15));
+  border: 2px solid rgba(99, 102, 241, .4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--indigo);
+  margin-bottom: 24px;
+  flex-shrink: 0;
+  box-shadow: 0 0 30px rgba(99, 102, 241, .2);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -.02em;
+}
+
+.step-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 10px;
+  letter-spacing: -.01em;
+}
+
+.step-desc {
+  font-size: .875rem;
+  color: var(--muted2);
+  line-height: 1.65;
+}
+
+.step-desc strong {
+  color: #a5b4fc;
+  font-weight: 600;
+}
 
 /* ══════════════════════════════════════════════════════
-   BADGES
+   PORTAL CARDS SECTION
 ══════════════════════════════════════════════════════ */
-.badge{
-  display:inline-flex;align-items:center;gap:4px;
-  padding:3px 9px;border-radius:20px;
-  font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+.portals {
+  padding: 80px 24px;
+  max-width: 900px;
+  margin: 0 auto;
 }
-.b-critical{background:rgba(244,63,94,.15);color:#f87171;border:1px solid rgba(244,63,94,.25)}
-.b-high    {background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.25)}
-.b-medium  {background:rgba(250,204,21,.15);color:#facc15;border:1px solid rgba(250,204,21,.25)}
-.b-low     {background:rgba(74,222,128,.15);color:#4ade80;border:1px solid rgba(74,222,128,.25)}
 
-.b-positive{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
-.b-neutral {background:rgba(148,163,184,.12);color:#94a3b8;border:1px solid rgba(148,163,184,.2)}
-.b-negative{background:rgba(244,63,94,.12);color:#f87171;border:1px solid rgba(244,63,94,.2)}
+.portals-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-top: 48px;
+}
 
-.b-delivery{background:rgba(56,189,248,.12);color:#38bdf8;border:1px solid rgba(56,189,248,.2)}
-.b-refund  {background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.2)}
-.b-quality {background:rgba(244,63,94,.12);color:#f87171;border:1px solid rgba(244,63,94,.2)}
-.b-service {background:rgba(251,146,60,.12);color:#fb923c;border:1px solid rgba(251,146,60,.2)}
-.b-other   {background:rgba(100,116,139,.12);color:#64748b;border:1px solid rgba(100,116,139,.2)}
+.portal-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform .25s ease, border-color .25s ease, box-shadow .25s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.portal-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+.portal-card.portal-customer::before {
+  background: linear-gradient(90deg, #38bdf8, var(--indigo));
+}
+
+.portal-card.portal-management::before {
+  background: linear-gradient(90deg, var(--indigo), var(--violet));
+}
+
+.portal-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(99, 102, 241, .3);
+  box-shadow: 0 16px 48px rgba(99, 102, 241, .12);
+}
+
+.portal-card:focus-visible {
+  outline: 2px solid var(--indigo);
+  outline-offset: 3px;
+}
+
+.portal-icon {
+  font-size: 2.25rem;
+  line-height: 1;
+}
+
+.portal-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -.03em;
+}
+
+.portal-desc {
+  font-size: .9rem;
+  color: var(--muted2);
+  line-height: 1.65;
+  flex: 1;
+}
+
+.portal-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: .875rem;
+  font-weight: 600;
+  color: #a5b4fc;
+  margin-top: 4px;
+}
+
+.portal-cta-arrow {
+  transition: transform .2s;
+}
+
+.portal-card:hover .portal-cta-arrow { transform: translateX(4px); }
 
 /* ══════════════════════════════════════════════════════
-   TABLE
+   FOOTER
 ══════════════════════════════════════════════════════ */
-.table-wrap{overflow-x:auto;border-radius:var(--radius-sm)}
-table{width:100%;border-collapse:collapse;font-size:.8rem}
-thead tr{border-bottom:1px solid var(--border2)}
-th{
-  padding:10px 14px;text-align:left;
-  font-size:.66rem;font-weight:700;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.07em;white-space:nowrap;
+footer {
+  border-top: 1px solid var(--border);
+  padding: 40px 24px;
+  text-align: center;
 }
-td{padding:12px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
-tbody tr:last-child td{border-bottom:none}
-tbody tr{transition:background .15s}
-tbody tr:hover td{background:rgba(255,255,255,.025)}
-.complaint-text{
-  max-width:280px;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;
-  color:var(--muted2);font-size:.78rem;
-}
-.customer-name{font-weight:600;color:var(--text)}
-.rank-num{font-weight:800;font-size:1rem;color:var(--indigo);font-variant-numeric:tabular-nums}
 
-/* Score bar in table */
-.score-wrap{display:flex;align-items:center;gap:8px}
-.score-track{width:70px;height:5px;background:rgba(255,255,255,.07);border-radius:3px;overflow:hidden;flex-shrink:0}
-.score-bar-fill{height:100%;border-radius:3px;transition:width .8s}
-.score-num{font-size:.75rem;font-weight:700;min-width:26px}
+.footer-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.footer-logo-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--indigo), var(--violet));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.footer-logo-text {
+  font-size: .95rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.footer-tagline {
+  font-size: .8rem;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.footer-disclaimer {
+  font-size: .75rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(250, 204, 21, .06);
+  border: 1px solid rgba(250, 204, 21, .12);
+  padding: 7px 16px;
+  border-radius: 20px;
+  margin-top: 4px;
+}
 
 /* ══════════════════════════════════════════════════════
-   CLUSTER CARDS
+   DIVIDER
 ══════════════════════════════════════════════════════ */
-.cluster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
-.cluster-card{
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
-  padding:18px;transition:transform .2s,border-color .2s,box-shadow .2s;
-  position:relative;overflow:hidden;
+.divider {
+  width: 100%;
+  max-width: 80px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--indigo), var(--violet));
+  border-radius: 2px;
+  margin: 0 auto 48px;
 }
-.cluster-card:hover{
-  transform:translateY(-3px);border-color:rgba(99,102,241,.35);
-  box-shadow:0 10px 40px rgba(99,102,241,.1);
-}
-.cluster-card::after{
-  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
-  background:linear-gradient(90deg,transparent,rgba(99,102,241,.4),transparent);
-  opacity:0;transition:opacity .2s;
-}
-.cluster-card:hover::after{opacity:1}
-.cluster-label{font-size:.875rem;font-weight:700;color:var(--text);margin-bottom:10px;line-height:1.4}
-.cluster-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.cluster-stat{background:rgba(255,255,255,.04);border-radius:6px;padding:8px 10px}
-.cluster-stat-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
-.cluster-stat-value{font-size:.9rem;font-weight:700;color:var(--text)}
-.sentiment-track{
-  margin-top:12px;background:rgba(255,255,255,.05);
-  border-radius:4px;height:5px;overflow:hidden;position:relative;
-}
-.sentiment-fill{height:100%;border-radius:4px;transition:width .8s}
-.sentiment-label{font-size:.65rem;color:var(--muted);margin-top:4px}
-
-/* ══════════════════════════════════════════════════════
-   FILTERS
-══════════════════════════════════════════════════════ */
-.filters{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;align-items:center}
-.filters select{
-  background:var(--surface2);border:1px solid var(--border2);
-  border-radius:var(--radius-sm);color:var(--text);
-  padding:8px 12px;font-size:.8rem;font-family:'Inter',sans-serif;
-  outline:none;cursor:pointer;transition:border-color .15s;min-width:140px;
-}
-.filters select:focus{border-color:var(--indigo)}
-
-/* ══════════════════════════════════════════════════════
-   FORM
-══════════════════════════════════════════════════════ */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.form-group{display:flex;flex-direction:column;gap:5px}
-.form-group.full{grid-column:1/-1}
-label{font-size:.75rem;font-weight:500;color:var(--muted2)}
-input,select.form-sel,textarea{
-  background:var(--surface2);border:1px solid var(--border);
-  border-radius:var(--radius-sm);color:var(--text);
-  padding:9px 13px;font-size:.85rem;font-family:'Inter',sans-serif;
-  outline:none;transition:border-color .15s,box-shadow .15s;
-}
-input:focus,select.form-sel:focus,textarea:focus{
-  border-color:var(--indigo);
-  box-shadow:0 0 0 3px rgba(99,102,241,.12);
-}
-textarea{resize:vertical;min-height:100px}
-.form-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px;grid-column:1/-1}
-
-.result-card{
-  margin-top:20px;padding:20px;
-  background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(139,92,246,.05));
-  border:1px solid rgba(99,102,241,.25);border-radius:var(--radius);
-  display:none;
-}
-.result-title{font-weight:700;color:#a5b4fc;margin-bottom:14px;font-size:.9rem}
-.result-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.result-item{background:rgba(255,255,255,.04);border-radius:6px;padding:10px 12px}
-.result-item-label{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
-
-/* ══════════════════════════════════════════════════════
-   TOAST
-══════════════════════════════════════════════════════ */
-#toast{
-  position:fixed;bottom:28px;right:28px;z-index:9999;
-  padding:12px 20px;border-radius:10px;font-size:.82rem;font-weight:500;
-  opacity:0;pointer-events:none;transform:translateY(10px);
-  transition:all .3s cubic-bezier(.4,0,.2,1);
-  backdrop-filter:blur(12px);
-  background:rgba(17,21,33,.9);border:1px solid var(--border2);color:var(--text);
-}
-#toast.show{opacity:1;transform:translateY(0)}
-#toast.success{border-color:rgba(74,222,128,.4);color:#4ade80}
-#toast.error  {border-color:rgba(244,63,94,.4);color:#f87171}
-
-/* ══════════════════════════════════════════════════════
-   PAGE VISIBILITY
-══════════════════════════════════════════════════════ */
-.page{display:none;animation:fadeIn .25s ease}
-.page.active{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-/* ══════════════════════════════════════════════════════
-   LOADING SKELETON
-══════════════════════════════════════════════════════ */
-.skeleton{
-  background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);
-  background-size:200% 100%;
-  animation:shimmer 1.5s infinite;border-radius:6px;
-}
-@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
-.loading-text{color:var(--muted);padding:40px;text-align:center;font-size:.85rem}
 
 /* ══════════════════════════════════════════════════════
    SCROLLBAR
 ══════════════════════════════════════════════════════ */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
-::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,.2)}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, .2); }
 
-@media(max-width:960px){
-  .stat-grid{grid-template-columns:repeat(2,1fr)}
-  .charts-row{grid-template-columns:1fr}
-  .main{padding:20px}
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .steps-row {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .steps-row::before { display: none; }
+
+  .portals-grid {
+    grid-template-columns: 1fr;
+  }
 }
-</style>
+
+@media (max-width: 640px) {
+  .nav { padding: 0 20px; }
+
+  .nav-actions { display: none; }
+  .nav-hamburger { display: flex; }
+
+  .hero { padding: 64px 20px 56px; }
+
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-lg {
+    padding: 13px 24px;
+    font-size: .9rem;
+  }
+
+  .features,
+  .how-it-works .how-inner,
+  .portals { padding-left: 20px; padding-right: 20px; }
+
+  .portal-card { padding: 28px 24px; }
+}
+  </style>
 </head>
 <body>
 
 <!-- ══════════════════════════════════════════════
-     SIDEBAR
+     TOP NAV
 ══════════════════════════════════════════════ -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-icon">🧠</div>
-    <div class="logo-text">
-      <h1>ComplaintIQ</h1>
-      <p>Intelligence Platform</p>
-    </div>
-  </div>
+<header role="banner">
+  <nav class="nav" aria-label="Main navigation">
+    <a class="nav-logo" href="/" aria-label="ComplaintIQ — Home">
+      <div class="nav-logo-icon" aria-hidden="true">🧠</div>
+      <span class="nav-logo-text">ComplaintIQ</span>
+    </a>
 
-  <nav class="nav">
-    <div class="nav-section">Main Menu</div>
-    <div class="nav-item active" onclick="navigate('overview')">
-      <span class="nav-icon">📊</span> Overview
+    <div class="nav-actions" role="navigation" aria-label="Portal access">
+      <a class="btn btn-outline" href="/customer">Customer Login</a>
+      <a class="btn btn-primary" href="/management">Management Portal</a>
     </div>
-    <div class="nav-item" onclick="navigate('complaints')">
-      <span class="nav-icon">📋</span> All Complaints
-    </div>
-    <div class="nav-item" onclick="navigate('clusters')">
-      <span class="nav-icon">🔗</span> Problem Clusters
-    </div>
-    <div class="nav-item" onclick="navigate('priority')">
-      <span class="nav-icon">🚨</span> Priority Queue
-    </div>
-    <div class="nav-section">Actions</div>
-    <div class="nav-item" onclick="navigate('submit')">
-      <span class="nav-icon">✏️</span> Submit Complaint
-    </div>
+
+    <!-- Mobile hamburger -->
+    <button
+      class="nav-hamburger"
+      id="hamburger-btn"
+      aria-label="Open navigation menu"
+      aria-expanded="false"
+      aria-controls="mobile-nav"
+      onclick="toggleMobileNav()"
+    >
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
   </nav>
 
-  <div style="flex:1"></div>
-  <div class="sidebar-footer" style="margin:0 12px 0">
-    <strong>🤖 AI-Powered</strong>
-    Auto-categorisation · Sentiment · Clustering · Priority scoring
+  <!-- Mobile drawer -->
+  <div class="nav-mobile" id="mobile-nav" role="navigation" aria-label="Mobile portal access">
+    <a class="btn btn-outline" href="/customer" style="width:100%;justify-content:center">Customer Login</a>
+    <a class="btn btn-primary" href="/management" style="width:100%;justify-content:center">Management Portal</a>
   </div>
-</aside>
+</header>
 
 <!-- ══════════════════════════════════════════════
-     MAIN
+     MAIN CONTENT
 ══════════════════════════════════════════════ -->
-<main class="main">
+<main>
 
-<!-- ═══════════════ OVERVIEW ═══════════════ -->
-<section class="page active" id="page-overview">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h2>Dashboard Overview</h2>
-      <p>Live complaint intelligence across all channels</p>
+  <!-- ── HERO ────────────────────────────────── -->
+  <section class="hero" aria-labelledby="hero-heading">
+    <div class="hero-eyebrow" aria-label="Platform category">
+      <span aria-hidden="true">🤖</span> AI-Powered Complaint Platform
     </div>
-    <button class="btn btn-ghost" onclick="loadAll()">↺&nbsp; Refresh</button>
-  </div>
 
-  <!-- Stat cards -->
-  <div class="stat-grid">
-    <div class="stat-card c-total">
-      <div class="stat-glow" style="background:var(--indigo)"></div>
-      <div class="stat-label">Total Complaints</div>
-      <div class="stat-value" id="stat-total">—</div>
-      <div class="stat-sub">All time</div>
-      <div class="stat-icon">📥</div>
-    </div>
-    <div class="stat-card c-critical">
-      <div class="stat-glow" style="background:var(--critical)"></div>
-      <div class="stat-label">Critical</div>
-      <div class="stat-value" id="stat-critical" style="color:var(--critical)">—</div>
-      <div class="stat-sub">Immediate action needed</div>
-      <div class="stat-icon">🚨</div>
-    </div>
-    <div class="stat-card c-negative">
-      <div class="stat-glow" style="background:var(--negative)"></div>
-      <div class="stat-label">Negative Sentiment</div>
-      <div class="stat-value" id="stat-negative" style="color:var(--negative)">—</div>
-      <div class="stat-sub">Angry / frustrated customers</div>
-      <div class="stat-icon">😠</div>
-    </div>
-    <div class="stat-card c-score">
-      <div class="stat-glow" style="background:var(--sky)"></div>
-      <div class="stat-label">Avg Priority Score</div>
-      <div class="stat-value" id="stat-avg" style="color:var(--sky)">—</div>
-      <div class="stat-sub">Out of 100</div>
-      <div class="stat-icon">📈</div>
-    </div>
-  </div>
+    <h1 class="hero-heading" id="hero-heading">
+      Customer Complaint Intelligence
+    </h1>
 
-  <!-- Charts -->
-  <div class="charts-row">
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--indigo)"></span>Complaints by Category</div>
-      <div class="bar-chart" id="chart-category"></div>
+    <p class="hero-subtitle">
+      AI-powered complaint analysis, smart prioritization, and end-to-end resolution tracking — built for modern support operations.
+    </p>
+
+    <div class="hero-ctas">
+      <a class="btn btn-primary btn-lg" href="/customer">
+        Customer Portal <span aria-hidden="true">→</span>
+      </a>
+      <a class="btn btn-outline btn-lg" href="/management">
+        Management Portal <span aria-hidden="true">→</span>
+      </a>
     </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--violet)"></span>Sentiment Distribution</div>
-      <div class="donut-wrap">
-        <svg id="donut-svg" width="120" height="120" viewBox="0 0 120 120"></svg>
-        <div class="donut-legend" id="donut-legend"></div>
+
+    <p class="hero-disclaimer" role="note">
+      <span aria-hidden="true">⚠️</span>
+      Demo system — simulated ShopIQ data. Not a real commercial deployment.
+    </p>
+  </section>
+
+  <!-- ── FEATURES ─────────────────────────────── -->
+  <section class="features" aria-labelledby="features-heading">
+    <p class="section-label">Core Capabilities</p>
+    <h2 class="section-title" id="features-heading">Intelligent Analysis, Automatically</h2>
+    <p class="section-subtitle">Every complaint is processed instantly — no manual tagging required.</p>
+    <div class="divider" role="presentation"></div>
+
+    <div class="features-grid" role="list">
+
+      <article class="feature-card" role="listitem">
+        <span class="feature-icon" aria-hidden="true">🔍</span>
+        <h3 class="feature-title">Auto-Categorization</h3>
+        <p class="feature-desc">
+          Classifies each complaint into Delivery, Refund, Product Quality, or Customer Service automatically — no manual tagging required.
+        </p>
+      </article>
+
+      <article class="feature-card" role="listitem">
+        <span class="feature-icon" aria-hidden="true">💬</span>
+        <h3 class="feature-title">Sentiment Analysis</h3>
+        <p class="feature-desc">
+          Detects emotional tone — positive, neutral, or negative — using a lexicon-based NLP pipeline tuned for customer language.
+        </p>
+      </article>
+
+      <article class="feature-card" role="listitem">
+        <span class="feature-icon" aria-hidden="true">🎯</span>
+        <h3 class="feature-title">Priority Scoring</h3>
+        <p class="feature-desc">
+          Scores 0–100 based on sentiment, urgency keywords, category weight, and cluster size — so the team always knows what to tackle first.
+        </p>
+      </article>
+
+      <article class="feature-card" role="listitem">
+        <span class="feature-icon" aria-hidden="true">🔗</span>
+        <h3 class="feature-title">Smart Clustering</h3>
+        <p class="feature-desc">
+          Groups similar complaints using TF-IDF + K-Means to surface systemic issues before they escalate into larger problems.
+        </p>
+      </article>
+
+      <article class="feature-card" role="listitem">
+        <span class="feature-icon" aria-hidden="true">🚨</span>
+        <h3 class="feature-title">Early Warnings</h3>
+        <p class="feature-desc">
+          Alerts management when complaint volume spikes or high-priority clusters form, enabling proactive rather than reactive response.
+        </p>
+      </article>
+
+      <article class="feature-card" role="listitem">
+        <span class="feature-icon" aria-hidden="true">📊</span>
+        <h3 class="feature-title">Analytics Dashboard</h3>
+        <p class="feature-desc">
+          Real-time dashboards, trend charts, and AI-explained priority breakdowns give managers full visibility across all active complaints.
+        </p>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ── HOW IT WORKS ──────────────────────────── -->
+  <section class="how-it-works" aria-labelledby="how-heading">
+    <div class="how-inner">
+      <p class="section-label">Workflow</p>
+      <h2 class="section-title" id="how-heading">How It Works</h2>
+      <p class="section-subtitle">From submission to resolution — tracked every step of the way.</p>
+      <div class="divider" role="presentation"></div>
+
+      <div class="steps-row" role="list">
+
+        <div class="step" role="listitem">
+          <div class="step-number" aria-label="Step 1">1</div>
+          <h3 class="step-title">Customer Submits</h3>
+          <p class="step-desc">
+            A customer signs in and submits a complaint through the portal.
+            The system assigns a <strong>unique complaint ID</strong> instantly.
+          </p>
+        </div>
+
+        <div class="step" role="listitem">
+          <div class="step-number" aria-label="Step 2">2</div>
+          <h3 class="step-title">AI Analyses</h3>
+          <p class="step-desc">
+            The AI pipeline immediately <strong>categorizes</strong> the complaint,
+            scores sentiment &amp; priority, and clusters it with related issues.
+          </p>
+        </div>
+
+        <div class="step" role="listitem">
+          <div class="step-number" aria-label="Step 3">3</div>
+          <h3 class="step-title">Management Resolves</h3>
+          <p class="step-desc">
+            Management investigates, <strong>updates the status</strong>,
+            and sends a customer-visible response. The customer sees the resolution in real time.
+          </p>
+        </div>
+
       </div>
     </div>
-    <div class="card">
-      <div class="card-title"><span class="dot" style="background:var(--sky)"></span>Priority Levels</div>
-      <div class="bar-chart" id="chart-priority"></div>
-    </div>
-  </div>
+  </section>
 
-  <!-- Critical table -->
-  <div class="card">
-    <div class="card-title">
-      <span class="dot" style="background:var(--critical)"></span>
-      Critical Complaints — Needs Immediate Attention
-    </div>
-    <div class="table-wrap">
-      <table id="table-critical">
-        <thead><tr>
-          <th>#</th><th>Customer</th><th>Category</th>
-          <th>Complaint</th><th>Score</th><th>Sentiment</th>
-        </tr></thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</section>
+  <!-- ── PORTAL ACCESS CARDS ───────────────────── -->
+  <section class="portals" aria-labelledby="portals-heading">
+    <p class="section-label">Access</p>
+    <h2 class="section-title" id="portals-heading">Choose Your Workspace</h2>
+    <p class="section-subtitle">Two dedicated portals, one connected system.</p>
 
-<!-- ═══════════════ COMPLAINTS ═══════════════ -->
-<section class="page" id="page-complaints">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h2>All Complaints</h2>
-      <p>Filter, explore and investigate every complaint</p>
-    </div>
-  </div>
-  <div class="filters">
-    <select id="filter-cat" onchange="filterComplaints()">
-      <option value="">All Categories</option>
-      <option value="delivery">🚚 Delivery</option>
-      <option value="refund">💰 Refund</option>
-      <option value="product_quality">⚠️ Product Quality</option>
-      <option value="customer_service">🎧 Customer Service</option>
-      <option value="other">📦 Other</option>
-    </select>
-    <select id="filter-sent" onchange="filterComplaints()">
-      <option value="">All Sentiments</option>
-      <option value="negative">😠 Negative</option>
-      <option value="neutral">😐 Neutral</option>
-      <option value="positive">😊 Positive</option>
-    </select>
-    <select id="filter-pri" onchange="filterComplaints()">
-      <option value="">All Priorities</option>
-      <option value="critical">🔴 Critical</option>
-      <option value="high">🟠 High</option>
-      <option value="medium">🟡 Medium</option>
-      <option value="low">🟢 Low</option>
-    </select>
-    <button class="btn btn-ghost" onclick="clearFilters()" style="font-size:.78rem;padding:7px 14px">✕ Clear</button>
-  </div>
-  <div class="card">
-    <div class="table-wrap">
-      <table id="table-complaints">
-        <thead><tr>
-          <th>#</th><th>Customer</th><th>Channel</th><th>Category</th>
-          <th>Complaint</th><th>Sentiment</th><th>Priority</th><th>Score</th>
-        </tr></thead>
-        <tbody><tr><td colspan="8" class="loading-text">Loading…</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-</section>
+    <div class="portals-grid">
 
-<!-- ═══════════════ CLUSTERS ═══════════════ -->
-<section class="page" id="page-clusters">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h2>Problem Clusters</h2>
-      <p>Similar complaints grouped to reveal systemic issues</p>
-    </div>
-  </div>
-  <div class="cluster-grid" id="cluster-grid">
-    <div class="loading-text">Loading clusters…</div>
-  </div>
-</section>
+      <a class="portal-card portal-customer" href="/customer" aria-label="Go to Customer Portal">
+        <span class="portal-icon" aria-hidden="true">👤</span>
+        <h3 class="portal-title">Customer Portal</h3>
+        <p class="portal-desc">
+          Submit a new complaint, track your existing cases, and receive updates from the support team — all in one place.
+        </p>
+        <span class="portal-cta">
+          Sign in or Register <span class="portal-cta-arrow" aria-hidden="true">→</span>
+        </span>
+      </a>
 
-<!-- ═══════════════ PRIORITY ═══════════════ -->
-<section class="page" id="page-priority">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h2>Priority Queue</h2>
-      <p>Complaints ranked by urgency — act on these first</p>
-    </div>
-  </div>
-  <div class="card">
-    <div class="table-wrap">
-      <table id="table-priority">
-        <thead><tr>
-          <th>Rank</th><th>Customer</th><th>Category</th>
-          <th>Complaint</th><th>Priority</th><th>Score</th><th>Sentiment</th>
-        </tr></thead>
-        <tbody><tr><td colspan="7" class="loading-text">Loading…</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-</section>
+      <a class="portal-card portal-management" href="/management" aria-label="Go to Management Portal">
+        <span class="portal-icon" aria-hidden="true">🛡️</span>
+        <h3 class="portal-title">Management Portal</h3>
+        <p class="portal-desc">
+          Access the full analytics dashboard, manage complaint queues, respond to customers, and monitor AI-detected priority issues.
+        </p>
+        <span class="portal-cta">
+          Staff Sign-in <span class="portal-cta-arrow" aria-hidden="true">→</span>
+        </span>
+      </a>
 
-<!-- ═══════════════ SUBMIT ═══════════════ -->
-<section class="page" id="page-submit">
-  <div class="page-header">
-    <div class="page-header-left">
-      <h2>Submit New Complaint</h2>
-      <p>Instantly analysed by AI — category, sentiment & priority assigned automatically</p>
     </div>
-  </div>
-  <div class="card" style="max-width:680px">
-    <form id="complaint-form" onsubmit="submitComplaint(event)">
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Customer ID *</label>
-          <input type="text" id="f-cid" placeholder="e.g. C099" required />
-        </div>
-        <div class="form-group">
-          <label>Customer Name</label>
-          <input type="text" id="f-name" placeholder="Full name" />
-        </div>
-        <div class="form-group">
-          <label>Email Address</label>
-          <input type="email" id="f-email" placeholder="customer@email.com" />
-        </div>
-        <div class="form-group">
-          <label>Channel</label>
-          <select class="form-sel" id="f-channel">
-            <option value="web">🌐 Web</option>
-            <option value="email">📧 Email</option>
-            <option value="chat">💬 Chat</option>
-            <option value="phone">📞 Phone</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Order ID</label>
-          <input type="text" id="f-order" placeholder="ORD-2024-001" />
-        </div>
-        <div class="form-group">
-          <label>Product ID</label>
-          <input type="text" id="f-product" placeholder="P001" />
-        </div>
-        <div class="form-group full">
-          <label>Complaint Text *</label>
-          <textarea id="f-text" placeholder="Describe the issue in detail…" required></textarea>
-        </div>
-        <div class="form-actions">
-          <button type="button" class="btn btn-ghost" onclick="resetForm()">Clear</button>
-          <button type="submit" class="btn btn-primary" id="submit-btn">✨ &nbsp;Analyse & Submit</button>
-        </div>
-      </div>
-    </form>
-
-    <div class="result-card" id="submit-result">
-      <div class="result-title">✅ &nbsp;Complaint Analysed Successfully</div>
-      <div class="result-grid" id="result-grid"></div>
-    </div>
-  </div>
-</section>
+  </section>
 
 </main>
 
-<!-- ── Toast ── -->
-<div id="toast"></div>
+<!-- ══════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════ -->
+<footer role="contentinfo">
+  <div class="footer-inner">
+    <div class="footer-logo">
+      <div class="footer-logo-icon" aria-hidden="true">🧠</div>
+      <span class="footer-logo-text">ComplaintIQ</span>
+    </div>
+    <p class="footer-tagline">
+      Customer Complaint Intelligence System &middot; College Demonstration Project<br />
+      Built with Flask + SQLAlchemy + scikit-learn
+    </p>
+    <p class="footer-disclaimer" role="note">
+      <span aria-hidden="true">⚠️</span>
+      Demo system — simulated ShopIQ data. Not a real commercial deployment.
+    </p>
+  </div>
+</footer>
 
 <script>
-// ══════════════════════════════════════
-// NAVIGATION
-// ══════════════════════════════════════
-const PAGES = ['overview','complaints','clusters','priority','submit'];
-function navigate(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
-  document.querySelectorAll('.nav-item')[PAGES.indexOf(page)].classList.add('active');
-  if (page === 'complaints') loadComplaints();
-  if (page === 'clusters')   loadClusters();
-  if (page === 'priority')   loadPriority();
+// Mobile nav toggle — only vanilla JS, no framework
+function toggleMobileNav() {
+  var btn  = document.getElementById('hamburger-btn');
+  var nav  = document.getElementById('mobile-nav');
+  var open = nav.classList.toggle('open');
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  btn.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
 }
 
-// ══════════════════════════════════════
-// TOAST
-// ══════════════════════════════════════
-function toast(msg, type='success') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className = 'show ' + type;
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.className = '', 3500);
-}
-
-// ══════════════════════════════════════
-// BADGE HELPERS
-// ══════════════════════════════════════
-function pBadge(level) {
-  return `<span class="badge b-${level}">${level}</span>`;
-}
-function sBadge(s) {
-  const icons = {positive:'😊', neutral:'😐', negative:'😠'};
-  return `<span class="badge b-${s}">${icons[s]||''} ${s}</span>`;
-}
-function cBadge(c) {
-  const map = {delivery:'delivery',refund:'refund',product_quality:'quality',customer_service:'service',other:'other'};
-  const icons = {delivery:'🚚',refund:'💰',product_quality:'⚠️',customer_service:'🎧',other:'📦'};
-  const label = c ? c.replace('_',' ') : 'other';
-  const cls   = map[c] || 'other';
-  return `<span class="badge b-${cls}">${icons[c]||''} ${label}</span>`;
-}
-function channelBadge(ch) {
-  const icons = {web:'🌐',email:'📧',chat:'💬',phone:'📞'};
-  return `<span style="font-size:.75rem;color:var(--muted2)">${icons[ch]||'📨'} ${ch||'—'}</span>`;
-}
-function scoreWidget(score, level) {
-  const colors = {critical:'#f43f5e',high:'#fb923c',medium:'#facc15',low:'#4ade80'};
-  const color  = colors[level] || 'var(--indigo)';
-  return `<div class="score-wrap">
-    <div class="score-track">
-      <div class="score-bar-fill" style="width:${score||0}%;background:${color}"></div>
-    </div>
-    <span class="score-num" style="color:${color}">${score||0}</span>
-  </div>`;
-}
-
-// ══════════════════════════════════════
-// OVERVIEW
-// ══════════════════════════════════════
-async function loadOverview() {
-  const res = await fetch('/api/complaints/summary');
-  const d   = await res.json();
-
-  document.getElementById('stat-total').textContent    = d.total_complaints;
-  document.getElementById('stat-critical').textContent = d.by_priority_level?.critical || 0;
-  document.getElementById('stat-negative').textContent = d.by_sentiment?.negative      || 0;
-  document.getElementById('stat-avg').textContent      = d.avg_priority_score;
-
-  // Category bar chart
-  const catColors = {delivery:'#38bdf8',refund:'#a78bfa',product_quality:'#f43f5e',customer_service:'#fb923c',other:'#64748b'};
-  const catNames  = {delivery:'Delivery',refund:'Refund',product_quality:'Quality',customer_service:'Service',other:'Other'};
-  const catData   = d.by_category || {};
-  const maxCat    = Math.max(...Object.values(catData), 1);
-  document.getElementById('chart-category').innerHTML = Object.entries(catData)
-    .sort((a,b)=>b[1]-a[1])
-    .map(([k,v]) => `
-    <div class="bar-row">
-      <div class="bar-label">${catNames[k]||k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxCat*100).toFixed(0)}%;background:${catColors[k]||'var(--indigo)'}"></div></div>
-      <div class="bar-count">${v}</div>
-    </div>`).join('');
-
-  // Sentiment donut
-  const sentColors = {negative:'#f43f5e',neutral:'#64748b',positive:'#4ade80'};
-  const sentData   = d.by_sentiment || {};
-  const total      = Object.values(sentData).reduce((a,b)=>a+b,0) || 1;
-  drawDonut(sentData, sentColors, total);
-  document.getElementById('donut-legend').innerHTML = Object.entries(sentData).map(([k,v]) => `
-    <div class="legend-item">
-      <div class="legend-dot" style="background:${sentColors[k]}"></div>
-      <span class="legend-label" style="text-transform:capitalize">${k}</span>
-      <span class="legend-val" style="margin-left:12px">${v}</span>
-    </div>`).join('');
-
-  // Priority bar chart
-  const priColors = {critical:'#f43f5e',high:'#fb923c',medium:'#facc15',low:'#4ade80'};
-  const priData   = d.by_priority_level || {};
-  const maxPri    = Math.max(...Object.values(priData), 1);
-  const priOrder  = ['critical','high','medium','low'];
-  document.getElementById('chart-priority').innerHTML = priOrder
-    .filter(k => priData[k] !== undefined)
-    .map(k => `
-    <div class="bar-row">
-      <div class="bar-label" style="text-transform:capitalize">${k}</div>
-      <div class="bar-track"><div class="bar-fill" style="width:${((priData[k]||0)/maxPri*100).toFixed(0)}%;background:${priColors[k]}"></div></div>
-      <div class="bar-count">${priData[k]||0}</div>
-    </div>`).join('');
-
-  // Critical complaints
-  const cr    = await fetch('/api/complaints?priority=critical&limit=10');
-  const crData = await cr.json();
-  const tbody  = document.querySelector('#table-critical tbody');
-  if (crData.results?.length) {
-    tbody.innerHTML = crData.results.map(c => `
-      <tr>
-        <td style="color:var(--muted);font-size:.75rem">${c.id}</td>
-        <td><span class="customer-name">${c.customer_name||c.customer_id}</span></td>
-        <td>${cBadge(c.category)}</td>
-        <td><div class="complaint-text" title="${c.complaint_text}">${c.complaint_text}</div></td>
-        <td>${scoreWidget(c.priority_score, c.priority_level)}</td>
-        <td>${sBadge(c.sentiment||'neutral')}</td>
-      </tr>`).join('');
-  } else {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--muted)">🎉 No critical complaints right now</td></tr>';
+// Close mobile nav when a link inside it is clicked
+document.getElementById('mobile-nav').addEventListener('click', function(e) {
+  if (e.target.tagName === 'A') {
+    document.getElementById('mobile-nav').classList.remove('open');
+    var btn = document.getElementById('hamburger-btn');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.setAttribute('aria-label', 'Open navigation menu');
   }
-}
-
-// Donut SVG
-function drawDonut(data, colors, total) {
-  const svg  = document.getElementById('donut-svg');
-  const cx=60, cy=60, r=44, stroke=14;
-  const circ = 2*Math.PI*r;
-  let offset = 0;
-  const slices = Object.entries(data).map(([k,v])=>({k,v,pct:v/total}));
-  svg.innerHTML = slices.map(s => {
-    const dash = s.pct * circ;
-    const gap  = circ - dash;
-    const el   = `<circle cx="${cx}" cy="${cy}" r="${r}"
-      fill="none" stroke="${colors[s.k]||'#6366f1'}" stroke-width="${stroke}"
-      stroke-linecap="round"
-      stroke-dasharray="${dash} ${gap}"
-      stroke-dashoffset="${-offset}"
-      transform="rotate(-90 ${cx} ${cy})" style="transition:stroke-dasharray .8s"/>`;
-    offset += dash;
-    return el;
-  }).join('')
-  + `<text x="${cx}" y="${cy-4}" text-anchor="middle" fill="#fff" font-size="16" font-weight="800" font-family="Inter">${total}</text>`
-  + `<text x="${cx}" y="${cy+12}" text-anchor="middle" fill="#6b7280" font-size="9" font-family="Inter">TOTAL</text>`;
-}
-
-// ══════════════════════════════════════
-// ALL COMPLAINTS
-// ══════════════════════════════════════
-async function loadComplaints(cat='', sent='', pri='') {
-  const params = new URLSearchParams({limit:'100'});
-  if (cat)  params.set('category', cat);
-  if (sent) params.set('sentiment', sent);
-  if (pri)  params.set('priority', pri);
-  const res  = await fetch('/api/complaints?' + params);
-  const data = await res.json();
-  const tbody = document.querySelector('#table-complaints tbody');
-  if (!data.results?.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--muted)">No complaints found</td></tr>';
-    return;
-  }
-  tbody.innerHTML = data.results.map(c => `
-    <tr>
-      <td style="color:var(--muted);font-size:.73rem">${c.id}</td>
-      <td><span class="customer-name">${c.customer_name||c.customer_id}</span></td>
-      <td>${channelBadge(c.channel)}</td>
-      <td>${cBadge(c.category)}</td>
-      <td><div class="complaint-text" title="${c.complaint_text}">${c.complaint_text}</div></td>
-      <td>${sBadge(c.sentiment||'neutral')}</td>
-      <td>${pBadge(c.priority_level||'low')}</td>
-      <td>${scoreWidget(c.priority_score||0, c.priority_level)}</td>
-    </tr>`).join('');
-}
-function filterComplaints() {
-  loadComplaints(
-    document.getElementById('filter-cat').value,
-    document.getElementById('filter-sent').value,
-    document.getElementById('filter-pri').value
-  );
-}
-function clearFilters() {
-  ['filter-cat','filter-sent','filter-pri'].forEach(id => document.getElementById(id).value='');
-  loadComplaints();
-}
-
-// ══════════════════════════════════════
-// CLUSTERS
-// ══════════════════════════════════════
-async function loadClusters() {
-  const res  = await fetch('/api/complaints/clusters');
-  const data = await res.json();
-  const grid = document.getElementById('cluster-grid');
-  const catIcons = {delivery:'🚚',refund:'💰',product_quality:'⚠️',customer_service:'🎧',other:'📦'};
-  grid.innerHTML = data.map(cl => {
-    const score = cl.avg_priority_score || 0;
-    const sent  = cl.avg_sentiment_score || 0;
-    const sentPct = ((sent + 1) / 2 * 100).toFixed(0);
-    const sentColor = sent < -0.05 ? '#f43f5e' : sent > 0.05 ? '#4ade80' : '#64748b';
-    const sentLabel = sent < -0.05 ? 'Mostly negative' : sent > 0.05 ? 'Mostly positive' : 'Mixed / neutral';
-    return `
-    <div class="cluster-card">
-      <div class="cluster-label">${catIcons[cl.category]||'📦'} ${cl.label}</div>
-      ${cBadge(cl.category)}
-      <div class="cluster-stats">
-        <div class="cluster-stat">
-          <div class="cluster-stat-label">Complaints</div>
-          <div class="cluster-stat-value">${cl.complaint_count}</div>
-        </div>
-        <div class="cluster-stat">
-          <div class="cluster-stat-label">Avg Priority</div>
-          <div class="cluster-stat-value" style="color:${score>=80?'#f43f5e':score>=60?'#fb923c':score>=40?'#facc15':'#4ade80'}">${score.toFixed(0)}</div>
-        </div>
-      </div>
-      <div class="sentiment-track">
-        <div class="sentiment-fill" style="width:${sentPct}%;background:${sentColor}"></div>
-      </div>
-      <div class="sentiment-label">${sentLabel}</div>
-    </div>`;
-  }).join('');
-}
-
-// ══════════════════════════════════════
-// PRIORITY QUEUE
-// ══════════════════════════════════════
-async function loadPriority() {
-  const res  = await fetch('/api/complaints/priority');
-  const data = await res.json();
-  const tbody = document.querySelector('#table-priority tbody');
-  tbody.innerHTML = data.map((c, i) => {
-    const rankColors = ['#ffd700','#c0c0c0','#cd7f32'];
-    const rankStyle  = i < 3 ? `color:${rankColors[i]};font-size:1rem` : 'color:var(--muted)';
-    return `
-    <tr>
-      <td><span class="rank-num" style="${rankStyle}">#${i+1}</span></td>
-      <td><span class="customer-name">${c.customer_name||c.customer_id}</span></td>
-      <td>${cBadge(c.category)}</td>
-      <td><div class="complaint-text" title="${c.complaint_text}">${c.complaint_text}</div></td>
-      <td>${pBadge(c.priority_level||'low')}</td>
-      <td>${scoreWidget(c.priority_score||0, c.priority_level)}</td>
-      <td>${sBadge(c.sentiment||'neutral')}</td>
-    </tr>`;
-  }).join('');
-}
-
-// ══════════════════════════════════════
-// SUBMIT COMPLAINT
-// ══════════════════════════════════════
-async function submitComplaint(e) {
-  e.preventDefault();
-  const btn  = document.getElementById('submit-btn');
-  btn.textContent = '⏳  Analysing…';
-  btn.disabled = true;
-
-  const body = {
-    customer_id:    document.getElementById('f-cid').value.trim(),
-    customer_name:  document.getElementById('f-name').value.trim()||undefined,
-    email:          document.getElementById('f-email').value.trim()||undefined,
-    channel:        document.getElementById('f-channel').value,
-    order_id:       document.getElementById('f-order').value.trim()||undefined,
-    product_id:     document.getElementById('f-product').value.trim()||undefined,
-    complaint_text: document.getElementById('f-text').value.trim(),
-  };
-
-  try {
-    const res  = await fetch('/api/complaints', {
-      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)
-    });
-    const data = await res.json();
-
-    if (!res.ok) {
-      toast(data.description || 'Submission failed', 'error');
-      return;
-    }
-
-    const priColors = {critical:'#f43f5e',high:'#fb923c',medium:'#facc15',low:'#4ade80'};
-    const el = document.getElementById('submit-result');
-    document.getElementById('result-grid').innerHTML = `
-      <div class="result-item">
-        <div class="result-item-label">Category</div>
-        <div style="margin-top:4px">${cBadge(data.category)}</div>
-      </div>
-      <div class="result-item">
-        <div class="result-item-label">Sentiment</div>
-        <div style="margin-top:4px">${sBadge(data.sentiment||'neutral')}</div>
-      </div>
-      <div class="result-item">
-        <div class="result-item-label">Priority Level</div>
-        <div style="margin-top:4px">${pBadge(data.priority_level||'low')}</div>
-      </div>
-      <div class="result-item">
-        <div class="result-item-label">Priority Score</div>
-        <div style="font-size:1.4rem;font-weight:800;color:${priColors[data.priority_level]||'var(--indigo)'}">
-          ${data.priority_score} <span style="font-size:.7rem;color:var(--muted);font-weight:400">/ 100</span>
-        </div>
-      </div>`;
-    el.style.display = 'block';
-    toast('✅ Complaint analysed successfully!', 'success');
-  } catch(err) {
-    toast('Network error — is the server running?', 'error');
-  } finally {
-    btn.textContent = '✨  Analyse & Submit';
-    btn.disabled = false;
-  }
-}
-function resetForm() {
-  document.getElementById('complaint-form').reset();
-  document.getElementById('submit-result').style.display = 'none';
-}
-
-// ══════════════════════════════════════
-// BOOT
-// ══════════════════════════════════════
-async function loadAll() { await loadOverview(); }
-loadAll();
+});
 </script>
+
 </body>
 </html>
