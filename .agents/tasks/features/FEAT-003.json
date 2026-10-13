@@ -1,0 +1,49 @@
+{
+  "id": "FEAT-003",
+  "type": "feat",
+  "description": "Management portal: create static/management.html — a self-contained single-page app with purple/indigo dark theme, 5-section sidebar navigation. Depends on FEAT-001 (all management API endpoints must exist). Independent of FEAT-002 (customer portal).",
+  "status": "completed",
+  "steps": [
+    "Step 1 — Create static/management.html as a single self-contained HTML file. Reuse the same CSS design language as static/index.html (purple/indigo theme, same CSS variable names: --bg, --surface, --indigo, --violet etc.) since they share the same design. Add management-specific accents. No external dependencies except Google Fonts Inter.",
+
+    "Step 2 — Login screen. ShopIQ Intelligence Platform branding. Username/password form. Demo hint box showing: admin/admin123, manager1/manager123. On submit: POST /auth/login; if role != 'manager' show error 'Access restricted to management accounts'; if success proceed to main app. On page load call GET /auth/me — if logged in as manager, skip login screen.",
+
+    "Step 3 — App shell: fixed left sidebar (240px) with logo (brain/shield icon), welcome message, 5 nav items: Dashboard (📊), Complaints (📋), Manage Complaint (🔧), Analytics (📈), Alerts (🚨). Top header bar: app name, logged-in user name, Logout button. Main content area right of sidebar. Page switching via JS show/hide sections.",
+
+    "Step 4 — Dashboard section. On load: call GET /api/complaints/summary for stats; call GET /api/complaints/alerts for early-warning banner. Render: 4 stat cards (Total, Critical, Negative, Avg Score — matching index.html pattern), Category bar chart (horizontal bars, same pattern as index.html using inline SVG-free approach), Sentiment donut chart (pure SVG, same as index.html), Priority bar chart. Early-warning alert banner: if alerts returned show a red/orange banner at top listing volume spikes and cluster alerts; if no alerts show a green 'All systems normal' notice.",
+
+    "Step 5 — Complaints section. Call GET /api/complaints on load/filter change. Filter dropdowns: Category, Sentiment, Priority, Status (new: open/in_progress/resolved/closed). Full table: ID, Customer, Channel, Category, Sentiment, Priority, Score bar, Status badge, Date, Manage button. Clicking Manage button stores complaint ID and switches to Manage Complaint section.",
+
+    "Step 6 — Manage Complaint section. Loaded when Manage button clicked from Complaints table. Call GET /api/complaints/<id>/detail. Layout: two-column upper (complaint info left, AI analysis right). Complaint info: text, metadata (date, channel, order/product). AI analysis card: category, sentiment, score bar, then call GET /api/complaints/<id>/priority-explanation and render the human-readable explanation as a collapsible block. Similar complaints panel: call GET /api/complaints/<id>/similar and list top 5 with their priority badges and a link to manage each. Actions panel: (a) Status update — dropdown (open/in_progress/resolved/closed) + Update button → PATCH /api/complaints/<id>/status; (b) Respond to customer — textarea + Send Response button → POST /api/complaints/<id>/respond, label says 'Customer will see this response'; (c) Internal note — textarea + Add Note button → POST /api/complaints/<id>/note, label says 'Internal only — not visible to customer'. Existing responses list below actions: show all responses (both customer-visible and internal notes with a 'Private' label). Refresh detail after each action.",
+
+    "Step 7 — Analytics section. Charts from existing API: call GET /api/complaints/summary for category/sentiment/priority distributions (bar + donut charts). Trend subsection: call GET /api/complaints/trends and render two charts: (a) Complaints per day for last 14 days — horizontal bar chart or sparkline using pure SVG; (b) Complaints by category for last 7 days — stacked horizontal bars. Use the same bar-chart rendering pattern as index.html (no external chart library). Label axes clearly.",
+
+    "Step 8 — Alerts section. Call GET /api/complaints/alerts on load. Three subsections: (a) Volume Spikes — table of categories with recent vs prior week counts and a warning badge; (b) High-Risk Clusters — cards showing cluster label, avg priority score bar, complaint count; (c) Critical Recent Complaints — table of critical complaints from last 48h with Manage button linking to Manage Complaint section. Show last-refreshed timestamp and a Refresh button. If all arrays are empty show 'No active alerts — all metrics normal' success card.",
+
+    "Step 9 — Ensure the existing index.html (internal dashboard at /) still works without login by NOT adding login_required to the summary/clusters/priority routes — actually FEAT-001 Step 4 adds @manager_required to those. This would break index.html which has no auth. Resolution: add a special bypass flag in the routes — OR better, keep index.html as a public internal tool and add a separate set of public summary endpoints. Correct approach: in routes.py, do NOT add @login_required or @manager_required to the existing read-only GET routes (summary, clusters, priority, list_complaints, get_complaint). Only add @login_required to POST /api/complaints (submit). The new management-specific routes (alerts, trends, respond, note, status) get @manager_required. The detail and responses routes get @login_required with ownership check. This preserves index.html working without auth while adding security to the new portal routes. Update FEAT-001 Step 4 accordingly — remove the decorators from existing read-only GET routes, only guard POST submit and all new routes."
+  ],
+  "acceptance_criteria": [
+    "GET http://127.0.0.1:5000/management returns 200 with HTML content",
+    "Logging in as admin/admin123 shows management dashboard with stat cards and charts populated",
+    "Early-warning alert banner appears (or shows 'all normal') without JS error",
+    "Complaints table loads with all 20+ complaints, filters work",
+    "Clicking Manage on a complaint loads full detail with AI analysis and priority explanation",
+    "Posting a response via the Respond form creates a visible response (also appears in customer portal)",
+    "Adding an internal note does NOT appear in the customer portal Track view",
+    "Status update changes complaint status and reflects immediately",
+    "Analytics section loads trend charts without errors",
+    "Alerts section loads and shows the three subsections",
+    "Logging in as alice/alice123 on /management shows 'Access restricted to management accounts'",
+    "index.html at / still loads and shows data without login (public internal tool)"
+  ],
+  "verification": [
+    "cd complaint-intelligence && python main.py — server starts",
+    "Open http://127.0.0.1:5000/management — login screen appears",
+    "Login as admin/admin123 — dashboard loads with stats",
+    "Navigate all 5 sections — no JS console errors, all API calls return data",
+    "Open http://127.0.0.1:5000 — existing index.html still works without login",
+    "Open http://127.0.0.1:5000/customer — login as alice, submit complaint, track it; login as admin on management and verify the complaint appears with Respond action working"
+  ],
+  "blocked_reason": null,
+  "findings": "GET /management returns 200 (verified). GET / returns 200 (index.html still public, unaffected). Charts rendered with pure inline HTML bar rows and inline SVG donut (same pattern as index.html — no external chart libraries). Alerts, trends, similar, priority-explanation, detail, respond, note, status PATCH all routed correctly. The /api/complaints endpoint does not support filtering by status server-side so status filtering is applied client-side in the complaints table. Responses list in the Manage section uses the detail endpoint which returns responses array; internal notes (is_visible_to_customer=false) are marked with a Private badge."
+}
